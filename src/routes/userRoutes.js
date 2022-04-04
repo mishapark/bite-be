@@ -1,52 +1,99 @@
-const bcryptjs = require("bcryptjs");
 const express = require("express");
+
 const router = express.Router();
+
 const { check, validationResult } = require("express-validator");
-const jsonwebtoken = require("jsonwebtoken");
+
+const bcrypt = require("bcryptjs");
+
+const jwt = require("jsonwebtoken");
+
 require("dotenv").config();
 
-let User = require("../models/user");
+let User = require("../models/User");
+
+//route post api/user
+
+//desc insert User
+
+//access public
 
 router.post(
   "/",
+
   [
-    check("name", "Name is required").not().isEmpty(),
-    check("email", "Email is required").not().isEmpty().isEmail(),
-    check("password", "Password is invalid").not().isEmpty(),
+    check("name", "Name is required")
+      .not()
+
+      .isEmpty(),
+
+    check("email", "Please enter valid email").isEmail(),
+
+    check("password", "please enter password with 3 or more").isLength({
+      min: 3,
+    }),
   ],
+
   async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      //check if user email is already in the database
+
+      let user1 = await User.findOne({ email: req.body.email });
+
+      if (user1) {
+        return res.status(400).json({ error: [{ msg: "user already exits" }] });
       }
 
-      const salt = await bcryptjs.genSalt();
-      const password = await bcryptjs.hash(req.body.password, salt);
+      //hash the password
 
-      const newUser = await User.create({
+      hashedPassword = await bcrypt.hash(req.body.password, 12);
+
+      //create a user
+
+      const newUser = new User({
         name: req.body.name,
+
         email: req.body.email,
-        password: password,
+
+        password: hashedPassword,
       });
+
+      //save the user
+
+      await newUser.save();
+
+      //generate token
 
       const payload = {
         user: {
           id: newUser.id,
+
           name: newUser.name,
+          role: newUser.role,
         },
       };
-      jsonwebtoken.sign(
+
+      jwt.sign(
         payload,
+
         process.env.JWT_SECRET,
-        { expiresIn: 36000 },
+
+        { expiresIn: 360000 },
+
         (err, token) => {
           if (err) throw err;
-          res.send({ token });
+
+          res.json({ token });
         }
       );
     } catch (err) {
-      return res.status(500).send(`Server error ${err}`);
+      res.status(500).send(err.message);
     }
   }
 );

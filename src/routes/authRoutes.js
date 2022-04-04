@@ -1,66 +1,116 @@
-require("dotenv").config();
-const bcryptjs = require("bcryptjs");
-const bcrypt = require("bcryptjs/dist/bcrypt");
 const express = require("express");
+
 const router = express.Router();
+
+const auth = require("../middlewares/authMiddleware");
+
+const bcrypt = require("bcryptjs");
+
+const jwt = require("jsonwebtoken");
+
+require("dotenv").config();
+
 const { check, validationResult } = require("express-validator");
-const jsonwebtoken = require("jsonwebtoken");
-const authMiddleware = require("../middlewares/authMiddleware");
 
-let User = require("../models/user");
+const User = require("../models/User");
 
-router.get("/", authMiddleware, async (req, res) => {
+//@route GET api/auth
+
+//@desc Get logged in User
+
+//@access Publi
+
+//auth middleware
+
+router.get("/", auth, async (req, res) => {
   try {
+    //use the user model to get user info except password
+
     const user = await User.findById(req.user.id).select("-password");
+
     res.json(user);
-  } catch (error) {
-    console.log(error);
-    res.statut(400).send("server error");
+  } catch (err) {
+    console.error(err.message);
+
+    res.status(500).send("server error");
   }
 });
 
+//@route POST api/auth
+
+//@desc Authenticate user and get token
+
+//@access Public
+
 router.post(
   "/",
-  [
-    check("email", "Email is required").not().isEmpty().isEmail(),
-    check("password", "Password is invalid").not().isEmpty(),
-  ],
-  async (req, res) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
 
-      const { email, password } = req.body;
-      let user = await User.findOne({ email: email });
+  [
+    check("email", "Please include valid email").isEmail(),
+
+    check("password", "Password is required").exists(),
+  ],
+
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password } = req.body;
+
+    try {
+      //see if user exists
+
+      let user = await User.findOne({ email });
+
       if (!user) {
-        return res.status(400).json({ errors: "invalid credentials" });
+        return res
+
+          .status(400)
+
+          .json({ errors: [{ msg: "invalid credentials" }] });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        return res.status(400).json({ errors: "invalid credentials 2" });
+        return res
+
+          .status(400)
+
+          .json({ errors: [{ msg: "invalid credentials" }] });
       }
+
+      //get user info for payload from mongo
 
       const payload = {
         user: {
           id: user.id,
+
           name: user.name,
+          role: user.role,
         },
       };
-      jsonwebtoken.sign(
+
+      jwt.sign(
         payload,
+
         process.env.JWT_SECRET,
+
         { expiresIn: 36000 },
+
         (err, token) => {
           if (err) throw err;
-          res.send({ token });
+
+          res.json({ token });
         }
       );
     } catch (err) {
-      return res.status(500).send(`Server error ${err}`);
+      console.error(err.message);
+
+      res.status(500).send("Server error");
     }
   }
 );
