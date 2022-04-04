@@ -43,7 +43,11 @@ router.get("/:id", async (req, res) => {
 router.post(
   "/",
   authMiddleware,
-  [check("name", "Name is required").not().isEmpty()],
+  [
+    check("name", "Name is required").not().isEmpty(),
+    check("type", "Type is required").not().isEmpty(),
+    check("role", "Role is required").not().isEmpty(),
+  ],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -74,10 +78,10 @@ router.delete("/", async (req, res) => {
   try {
     const job = await Job.findOneAndRemove({ id: req.body.id });
     if (!job) {
-      return res.status(404).send("todo not found");
+      return res.status(404).send("job not found");
     }
 
-    res.send("todo deleted");
+    res.send("job deleted");
   } catch (err) {
     return res.status(500).send("Server error");
   }
@@ -88,18 +92,20 @@ router.delete("/", async (req, res) => {
 //access public
 router.put("/", async (req, res) => {
   try {
-    const job = await Job.findById(req.body.id);
+    const job = await Job.findById(req.body._id);
     if (!job) {
-      return res.status(404).send("todo not found");
+      return res.status(404).send("job not found");
     }
+    console.log(job);
     job.name = req.body.name;
     job.location = req.body.location;
+    job.user = req.body.user;
     job.type = req.body.type;
     job.expirience = req.body.expirience;
     job.role = req.body.role;
     job.description = req.body.description;
-    await todo.save();
-    res.send(todo);
+    await job.save();
+    res.send(job);
   } catch (err) {
     return res.status(500).send("Server error");
   }
