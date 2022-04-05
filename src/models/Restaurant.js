@@ -6,6 +6,9 @@ const restaurantSchema = Schema({
     type: Schema.Types.ObjectId,
     ref: "users",
   },
+  picture: {
+    type: String,
+  },
   name: {
     type: String,
     require: true,
@@ -29,9 +32,17 @@ const restaurantSchema = Schema({
     type: String,
     require: [true, "Please add hours"],
   },
-  reviews: {
-    type: Array,
-  },
+  // reviews: [
+  //   {
+  //     type: Schema.Types.ObjectId,
+  //     ref: "reviews",
+  //   },
+  // ],
+  options: [
+    {
+      type: String,
+    },
+  ],
 });
 
 module.exports = mongoose.model("Restaurant", restaurantSchema);

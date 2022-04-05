@@ -44,11 +44,14 @@ router.post(
       }
       const newRestaurant = await Restaurant.create({
         user: req.user.id,
+        picture: req.body.picture,
+        rating: req.body.rating,
+        options: req.body.options,
         name: req.body.name,
         cuisine: req.body.cuisine,
         price: req.body.price,
         location: req.body.location,
-        hours: req.body.hours
+        hours: req.body.hours,
       });
       res.send(newRestaurant);
     } catch (err) {
@@ -76,11 +79,11 @@ router.put("/", async (req, res) => {
     if (!restaurant) {
       return res.status(404).send("Restaurant not found");
     }
-    restaurant.name= req.body.name,
-    restaurant.cuisine= req.body.cuisine,
-    restaurant.price= req.body.price,
-    restaurant.location= req.body.location,
-    restaurant.hours= req.body.hours
+    (restaurant.name = req.body.name),
+      (restaurant.cuisine = req.body.cuisine),
+      (restaurant.price = req.body.price),
+      (restaurant.location = req.body.location),
+      (restaurant.hours = req.body.hours);
     await restaurant.save();
     res.send(restaurant);
   } catch (err) {

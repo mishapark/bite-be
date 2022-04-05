@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const restaurantRoute = require("./src/routes/restaurantRoutes.js");
+const reviewRoutes = require("./src/routes/reviewRoutes");
 const contactRoute = require("./src/routes/contactRoutesDB");
 const eventRoute = require("./src/routes/eventRoutesDB");
 const featurdEventRoute = require("./src/routes/featuredEventRoutesDB");
@@ -22,6 +23,7 @@ connectDB();
 
 app.use(express.json());
 app.use("/api/restaurants", restaurantRoute);
+app.use("/api/reviews", reviewRoutes);
 app.use("/api/contacts", contactRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/featuredEvents", featurdEventRoute);
