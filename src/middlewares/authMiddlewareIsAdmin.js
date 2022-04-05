@@ -11,7 +11,7 @@ module.exports = function (req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded.user;
-    if (req.user.role !== "Admin") {
+    if (req.user.role[0] !== "Admin") {
       throw new Error();
     }
     next();
