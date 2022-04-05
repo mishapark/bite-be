@@ -62,6 +62,8 @@ router.post(
         email: req.body.email,
 
         password: hashedPassword,
+
+        role: req.body.role,
       });
 
       //save the user
