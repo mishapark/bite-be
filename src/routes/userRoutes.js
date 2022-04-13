@@ -12,6 +12,16 @@ require("dotenv").config();
 
 let User = require("../models/User");
 
+//Get all users
+router.get("/", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.send(users);
+  } catch (err) {
+    return res.status(500).send("Server error");
+  }
+});
+
 //route post api/user
 
 //desc insert User
@@ -99,5 +109,21 @@ router.post(
     }
   }
 );
+
+//Make admin
+router.put("/", async (req, res) => {
+  try {
+    const user = await User.updateOne(
+      { _id: req.body._id },
+      { $set: { role: ["Admin"] } }
+    );
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.send(user);
+  } catch (err) {
+    return res.status(500).send("Server error");
+  }
+});
 
 module.exports = router;
