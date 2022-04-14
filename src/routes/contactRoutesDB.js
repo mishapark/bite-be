@@ -9,6 +9,8 @@ const router = express.Router();
 
 const { check, validationResult } = require('express-validator');
 
+const nodemailer = require('nodemailer');
+
 //route Get api/todos
 //desc Get all Todos
 //access public
@@ -74,7 +76,7 @@ async (req, res) => {
   
       subject: 'Please, contact ' + newContact.name,
   
-      text: newContact.email + newContact.phone,
+      text: 'Email ID: ' + newContact.email + '\nPhone Number: ' + newContact.phone,
     };
   
     transporter.sendMail(mailOptions, function (error, info) {
@@ -88,7 +90,7 @@ async (req, res) => {
     });
     
   } catch (err) {
-    return res.status(500).send('Server error');
+    return res.status(500).send(err.message);
   }
 });
 
