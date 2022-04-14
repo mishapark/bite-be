@@ -57,7 +57,36 @@ async (req, res) => {
       email: req.body.email,
       phone: req.body.phone,
     });
-    res.send(newContact);
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+  
+      auth: {
+        user: 'nurlybekcan@gmail.com',
+  
+        pass: 'Bnb/1902',
+      },
+    });
+  
+    const mailOptions = {
+      from: 'nurlybekcan@gmail.com',
+  
+      to: 'nurlybekcan@gmail.com',
+  
+      subject: 'Please, contact ' + newContact.name,
+  
+      text: newContact.email + newContact.phone,
+    };
+  
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+        return res.send('Error sending email');
+      } else {
+        console.log('Email sent: ' + info.response);
+        return res.send(' email send');
+      }
+    });
+    
   } catch (err) {
     return res.status(500).send('Server error');
   }
@@ -97,5 +126,7 @@ router.put('/', async (req, res) => {
     return res.status(500).send('Server error');
   }
 });
+
+
 
 module.exports = router;
